@@ -1,6 +1,8 @@
 <template>
   <form :action="sendMessage" @click.prevent="onSubmit">
-    <input v-model="message" type="text" >
+    <input v-model="tableID" type="text" >
+    <input v-model="userID" type="text" >
+    <input v-model="betvol" type="text" >
     <input type="submit" value="Send" @click="sendMessage">
   </form>
   <!-- <p>
@@ -14,40 +16,65 @@
     <p>
       {{ rcvMessage }}
     </p>
-    <button @click="showMsg = !showMsg">Dismiss</button>
   </div>
 </template>
 
 <script>
+let msg = {
+  "tableID": "500001",
+  "userID": "c63p432n1fdk5k0aeta0",
+  "connType": 'JOIN',
+  "status": 'WAITING',
+  "betvol": 200,
+  "greeting": '',
+}
+
 export default {
   name: 'App',
   data() {
     return {
-      message: "",
+      betvol: 0,
       socket: null,
       rcvMessage: "",
-      showMsg: false
+      showMsg: true,
+      tableID: "",
+      userID: "",
+      userStatus: ""
     }
   },
   mounted() {
-    this.socket = new WebSocket("ws://localhost:9100/socket")
-    this.socket.onmessage = (msg) => {
-      console.log(msg)
-      this.acceptMsg(msg)
+    this.socket = new WebSocket("ws://localhost:9080/ws")
+    this.socket.onclose = () => {
+      console.log("Connection closed")
+    }
+    this.socket.onerror = () => {
+      console.log("Connection error")
+    }
+    this.socket.onopen = () => {
+      console.log("Connection success")
+      msg.connType = "JOIN"
+      msg.status = "WAITING"
+      this.socket.send(JSON.stringify(msg))
+    }
+    this.socket.onmessage = (evt) => {
+        this.acceptMsg(evt)
     }
   },
   methods: {
     sendMessage() {
-      let msg = {
-        "connType": 'JOIN',
-        "userXid": '',
-        "greeting": this.message,
-      }
+      msg.tableID = this.tableID
+      msg.userID = this.userID
+      msg.connType = "ONLINE"
+      msg.status = "BETDONE"
+      msg.betvol = parseInt(this.betvol)
       this.socket.send(JSON.stringify(msg))
     },
-    acceptMsg(msg) {
-      this.rcvMessage = msg.data
-      this.showMsg = true
+    acceptMsg(evt) {
+      let rcvJson
+      this.rcvMessage = evt.data
+      rcvJson = JSON.parse(evt.data)
+      // console.log(rcvJson)
+      console.log(rcvJson.tableID, rcvJson.userID)
     }
   }
 }
