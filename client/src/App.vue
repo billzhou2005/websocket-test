@@ -78,6 +78,7 @@ export default {
       msg.connType = "ONLINE"
       msg.status = "BETDONE"
       msg.betvol = parseInt(this.betvol)
+      msg.greeting = "Hello!"
       this.socket.send(JSON.stringify(msg))
     },
     acceptMsg(evt) {
