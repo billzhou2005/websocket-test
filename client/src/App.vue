@@ -33,7 +33,7 @@ export default {
   name: 'App',
   data() {
     return {
-      betvol: 0,
+      betvol: 50,
       socket: null,
       rcvMessage: "",
       showMsg: true,
@@ -43,7 +43,7 @@ export default {
     }
   },
   mounted() {
-    this.socket = new WebSocket("ws://localhost:9080/ws")
+    this.socket = new WebSocket("ws://140.143.149.188:9080/ws")
     this.socket.onclose = () => {
       console.log("Connection closed")
     }
