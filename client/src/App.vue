@@ -68,7 +68,8 @@
 let roomMsg = {
   "tID": 0,
   "name": "loginU",
-  "msgType": "NONE",
+  "msgType": "NEW",
+  "type": "BNEXT",
   "seatID": 0,
   "bvol": 0,
   "balance": 100000,
