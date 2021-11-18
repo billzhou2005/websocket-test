@@ -1,88 +1,115 @@
 
 <template>
   <div class="join">
-    <button class="joinButton" @click="joinMessage(players[0])">Player1 Join</button>
-    <button class="joinButton" style="margin-left:10px;" @click="joinMessage(players[1])">Player2 Join</button>
-    <button class="joinButton" style="margin-left:10px;" @click="joinMessage(players[2])">Player3 Join</button>
+    <button class="joinButton" @click="joinMessage()">LoginUser Join</button>
   </div>
-  <div id="counter" style="color:red;">
-    Counter: {{ counter }}
+  <div class="row-up">
+    <div class="main-left">
+      <div>
+      <span>Player2  </span>
+      <span v-if="countFocus[2]" style="margin-left:10px; color:red;font-size:24px"> {{ counter }} </span>
+      </div>
+      <form :action="sendMessage" @click.prevent="onSubmit">
+        <label for="betvol">BetVol:   </label>
+        <input v-model="players[2].betvol" type="text" >
+        <input :disabled="!players[2].isActivated" type="submit" value="Player2 Send" @click="sendMessage(players[1])">
+      </form>
+    </div>
+    <div class="main-right">
+      <div>
+      <span>Player3  </span>
+      <span v-if="countFocus[4]" style="margin-left:10px; color:red;font-size:24px"> {{ counter }} </span>
+      </div>
+      <form :action="sendMessage" @click.prevent="onSubmit">
+        <label for="betvol">BetVol:   </label>
+        <input v-model="players[4].betvol" type="text" >
+        <input :disabled="!players[4].isActivated" type="submit" value="Player3 Send" @click="sendMessage(players[2])"> <br><br>
+      </form>
+    </div>
   </div>
 
-  <form :action="sendMessage" @click.prevent="onSubmit">
-    <label for="userID">UserID:  </label>
-    <input v-model="players[0].userID" type="text" >
-    <label for="seatID">SeatID:  </label>
-    <input v-model="players[0].seatID" type="text" >
-    <label for="betvol">BetVol:   </label>
-    <input v-model="players[0].betvol" type="text" > <br><br>
-    <input :disabled="isdisabled" type="submit" value="Player1 Send" @click="sendMessage(players[0])"> <br><br>
-  </form>
-  <form :action="sendMessage" @click.prevent="onSubmit">
-    <label for="userID">UserID:  </label>
-    <input v-model="players[1].userID" type="text" >
-    <label for="seatID">SeatID:  </label>
-    <input v-model="players[1].seatID" type="text" >
-    <label for="betvol">BetVol:   </label>
-    <input v-model="players[1].betvol" type="text" > <br><br>
-    <input type="submit" value="Player2 Send" @click="sendMessage(players[1])"> <br><br>
-  </form>
-  <form :action="sendMessage" @click.prevent="onSubmit">
-    <label for="userID">UserID:  </label>
-    <input v-model="players[2].userID" type="text" >
-    <label for="seatID">SeatID:  </label>
-    <input v-model="players[2].seatID" type="text" >
-    <label for="betvol">BetVol:   </label>
-    <input v-model="players[2].betvol" type="text" > <br><br>
-    <input type="submit" value="Player3 Send" @click="sendMessage(players[2])"> <br><br>
-  </form>
-  <!-- <p>
-    Two way data binding is fun!
-  </p>
-  <p>
-    {{ message }}
-  </p> -->
-  <div v-if="showMsg">
-    <h3>Message in a WebSocket</h3>
+  <div class="row-middle">
+      <div class="betvolTotal">
+        <span class="betvolTotal">{{ players[0].betvol + players[2].betvol +players[4].betvol }}  </span>
+      </div>
+  </div>
+
+  <div class="row-down">
+    <div>
+      <span>LoginUser  </span>
+      <span v-if="countFocus[0]" style="margin-left:10px; color:red;font-size:24px"> {{ counter }} </span>
+    </div>
+    <form :action="sendMessage" @click.prevent="onSubmit">
+      <label for="betvol">BetVol:   </label>
+      <input v-model="players[0].betvol" type="text" >
+      <input :disabled="!players[0].isActivated" type="submit" value="Player1 Send" @click="sendMessage(players[0])"> <br><br>
+    </form>
+
+  </div>
+  <div class="msg-btm" >
+    <label>Message in a WebSocket</label>
     <p>
       {{ rcvMessage }}
     </p>
-  </div>
-  <div class="closews">
     <button @click="WebSocketClose">CloseWS</button>
+  </div>
+  <div>
+    <button @click="testButton"> Test </button>
   </div>
 </template>
 
 <script>
-let msg = {
-  "tableID": 0,
-  "userID": "c63p432n1fdk5k0aeta0",
+
+// msgType-init: NONE
+// msgType-Send: JOINED,WAITING,BNEXT,TIMEOUT,CLOSE
+// msgType-Received: Assigned,RNEW,BNEXT,RDONE (RNEW: Round new)
+// seatID: 0-8, >8-all
+
+let roomMsg = {
+  "tID": 0,
+  "name": "loginU",
+  "msgType": "NONE",
   "seatID": 0,
-  "connType": 'JOINED',
-  "status": 'WAITING',
-  "betvol": 0,
-  "greeting": 'Hi',
+  "bvol": 0,
+  "balance": 100000,
+  "fID": 0,
+  "status": ["MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL"],
+  "types": ["NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE"],
+  "names": ["TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD"],
+  "balances": [200000,200000,200000,200000,200000,200000,200000,200000,200000],
+//  "cardsPoints": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+//  "cardsSuits": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 }
+
+// let player = {"userID": "c63p432n1fdk5k0aeta0", "nickName": "NONE", "status": "MANUAL", "seatID":100, "isActivated": false, "round":0, "betvol":0, "greeting":"Hi" }
 
 export default {
   name: 'App',
   data() {
     return {
       players: [
-        {"userID": "c63p432n1fdk5k0aeta1", "seatID":1, "betvol":120},
-        {"userID": "c63p432n1fdk5k0aeta2", "seatID":2, "betvol":120},
-        {"userID": "c63p432n1fdk5k0aeta3", "seatID":3, "betvol":120},
+        {userID: "c63p432n1fdk5k0aeta0", status: "MANUAL", seatID:0,connType: "NONE",isActivated: true,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta1", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta2", status: "AUTO", seatID:2,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta3", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta4", status: "AUTO", seatID:4,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta5", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta6", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta7", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
+        {userID: "c63p432n1fdk5k0aeta8", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"}
       ],
-      betvol: 50,
       socket: null,
       rcvMessage: "",
       showMsg: true,
       tableID: 0,
       userID: "c63p432n1fdk5k0aeta1",
-      seatID: 0,
+      selectedSeatID: 0,
       userStatus: "",
+      betvolTotal: 50,
       counter: 0,
-      isdisabled: true
+      countFocus: [false, false, false, false, false, false, false, false, false],
+      countIndex: 0,
+      testValue: 0
     }
   },
   mounted() {
@@ -95,93 +122,146 @@ export default {
     }
     this.socket.onopen = () => {
       console.log("Connection success")
-      msg.connType = "JOINED"
-      msg.status = "WAITING"
-      this.socket.send(JSON.stringify(msg))
+    //  msg.connType = "JOINED"
+    //  msg.status = "WAITING"
+    //  this.socket.send(JSON.stringify(msg))
     }
     this.socket.onmessage = (evt) => {
         this.acceptMsg(evt)
     }
-    
+
     setInterval(() => {
       if (this.counter > 0) {
         this.counter--
-        if(this.counter === 0 && this.isdisabled == false) {
-          this.isdisabled = true
-          msg.userID = this.players[0].userID
-          msg.seatID = this.players[0].seatID
-          msg.betvol = 0
-          msg.connType = "TIMEOUT"
-          msg.status = "BDONE"
-          this.socket.send(JSON.stringify(msg))
+        if(this.counter === 0 && this.players[0].isActivated==true ) {
+          this.players[0].isActivated = false
+
+        //  this.socket.send(JSON.stringify(msg))
         }
-      } 
+      }
     }, 1000)
   },
   methods: {
     sendMessage(player) {
-      msg.tableID = parseInt(this.tableID) 
-      msg.userID = player.userID
-      msg.seatID = parseInt(player.seatID)
-      msg.connType = "PLAYING"
-      msg.status = "BNEXT"
-      msg.betvol = parseInt(player.betvol)
-      msg.greeting = "test!"
-      this.socket.send(JSON.stringify(msg))
-      if(player.seatID ===1 ) {
-        this.counter = 0
-        this.isdisabled = true
-      }
+    //  this.socket.send(JSON.stringify(msg))
+
+      // this.getCountFocus(player.seatID)
+      // this.counter = 15
+      player.isActivated = false
     },
+    getCountFocus(seatID) {
+      this.countFocus[seatID] = false
+      // this.players.sort(this.sortSeatID)
+      // console.log(this.players)
+      let i = seatID
+      do
+      {
+        i++
+        if(i > 8) { i = 0 }
+        if(this.players[i].seatID != 100) {
+          if(this.players[i].connType != "NONE" || this.players[i].connType != "TIMEOUT" ||this.players[i].connType != "CLOSE") {
+            this.countFocus[this.players[i].seatID] = true
+            this.countIndex = this.players[i].seatID
+            break
+          }
+        } else if (this.players[i].seatID == seatID) {
+          this.countFocus[seatID] = false
+          this.countIndex = seatID
+          break
+        }
+      }
+      while (i<9)
+    },
+    testButton() {
+      this.testValue++
+      console.log(this.testValue)
+      if(this.testValue > 8) {
+        this.testValue =0
+      }
+      this.getCountFocus(this.testValue)
+      console.log(this.countFocus)
+    },
+    sortSeatID(a, b) {
+      return a.seatID - b.seatID
+    },
+
     acceptMsg(evt) {
       let rcvJson
       this.rcvMessage = evt.data
       try {
         rcvJson = JSON.parse(evt.data)
-        console.log(rcvJson.userID, rcvJson.status, rcvJson.betvol)
-        if(rcvJson.seatID === 3) {
-          if(rcvJson.status == "BDONE" || rcvJson.status == "BNEXT") {
-            this.isdisabled = false
-            this.counter = 10
-          }
-        } 
+        console.log(rcvJson)
+
       } catch(e) {
         console.log("error message", e.message)
       }
     },
     WebSocketClose() {
-      msg.tableID = parseInt(this.tableID) 
-      msg.userID = this.userID
-      msg.connType = "CLOSE"
-      this.socket.send(JSON.stringify(msg))
+    //  this.socket.send(JSON.stringify(msg))
       this.socket.close()
     },
-    joinMessage(player) {
-      msg.userID = player.userID
-      msg.seatID = player.seatID
-      msg.connType = "JOINED"
-      msg.status = "WAITING"
-      msg.betvol = 0
-      this.socket.send(JSON.stringify(msg))
+    joinMessage() {
+      roomMsg.msgType = "JOIN"
+      roomMsg.name = "LoginU"
+      roomMsg.balance = 150000
+      this.socket.send(JSON.stringify(roomMsg))
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
 }
 div {
-  padding-top: 15px;
-  padding-bottom: 15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
-
+.main-left{
+  width:50%;
+  height:100px;
+  background:rgb(246, 255, 192);
+  float:left;
+}
+.main-right{
+  width:50%;
+  height:100px;
+  background:pink;
+  float:right;
+}
+.row-middle {
+  margin: 5px;
+  width:100%;
+  height:200px;
+  background:rgb(178, 198, 241);
+  float:right;
+}
+.row-middle {
+  margin-top: 5px;
+  width:100%;
+  height:200px;
+  background:rgb(178, 198, 241);
+}
+.row-down {
+  margin-top: 5px;
+  width:100%;
+  height:100px;
+  background:rgb(185, 241, 184);
+  float:right;
+}
+.msg-btm {
+  margin-top: 20px;
+  width:100%;
+  height:100px;
+  background:rgb(255, 255, 255);
+  float:right;
+}
 .joinButton {
   color:blue;
 }
