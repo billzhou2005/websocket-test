@@ -64,7 +64,7 @@
 // msgType-Send: JOINED,WAITING,BNEXT,TIMEOUT,CLOSE
 // msgType-Received: Assigned,RNEW,BNEXT,RDONE (RNEW: Round new)
 // seatID: 0-8, >8-all
-
+/*
 let roomMsg = {
   "tID": 0,
   "name": "loginU",
@@ -78,9 +78,7 @@ let roomMsg = {
   "types": ["NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE"],
   "names": ["TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD"],
   "balances": [200000,200000,200000,200000,200000,200000,200000,200000,200000],
-//  "cardsPoints": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-//  "cardsSuits": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-}
+} */
 
 // let player = {"userID": "c63p432n1fdk5k0aeta0", "nickName": "NONE", "status": "MANUAL", "seatID":100, "isActivated": false, "round":0, "betvol":0, "greeting":"Hi" }
 
@@ -88,6 +86,20 @@ export default {
   name: 'App',
   data() {
     return {
+      roomMsg: {
+        "tID": 0,
+        "name": "loginU",
+        "msgType": "NEW",
+        "type": "BNEXT",
+        "seatID": 0,
+        "bvol": 0,
+        "balance": 100000,
+        "fID": 0,
+        "status": ["MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL","MANUAL"],
+        "types": ["NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE","NONE"],
+        "names": ["TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD","TBD"],
+        "balances": [200000,200000,200000,200000,200000,200000,200000,200000,200000],
+      },      
       players: [
         {userID: "c63p432n1fdk5k0aeta0", status: "MANUAL", seatID:0,connType: "NONE",isActivated: true,round:0, betvol:100,greeting:"Hi"},
         {userID: "c63p432n1fdk5k0aeta1", status: "MANUAL", seatID:100,connType: "NONE",isActivated: false,round:0, betvol:100,greeting:"Hi"},
@@ -202,10 +214,10 @@ export default {
       this.socket.close()
     },
     joinMessage() {
-      roomMsg.msgType = "JOIN"
-      roomMsg.name = "LoginU"
-      roomMsg.balance = 150000
-      this.socket.send(JSON.stringify(roomMsg))
+      this.roomMsg.msgType = "JOIN"
+      this.roomMsg.name = "LoginU"
+      this.roomMsg.balance = 150000
+      this.socket.send(JSON.stringify(this.roomMsg))
     }
   }
 }
